@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { io } from "socket.io-client";
 import { QRCodeCanvas } from "qrcode.react";
 
-const socket = io("https://onrender.com");
+const socket = io("https://" + "://onrender.com");
 
 function App() {
   const [role, setRole] = useState("home");
@@ -21,14 +21,13 @@ function App() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-const urlRoom = params.get("room")?.toUpperCase();
+    const urlRoom = params.get("room")?.toUpperCase();
     if (urlRoom) {
       setRoomCode(urlRoom);
       setRole("audience");
       socket.emit("join_room", urlRoom);
     }
 
-        // लेट जुड़ने पर सर्वर से पुराना चल रहा सवाल और वोट लेना
     socket.on("room_state", (state) => {
       if (state.poll) setActivePoll(state.poll);
       if (state.votes) setVotes(state.votes);
@@ -53,6 +52,7 @@ const urlRoom = params.get("room")?.toUpperCase();
     });
 
     return () => {
+      socket.off("room_state");
       socket.off("receive_poll");
       socket.off("receive_vote");
       socket.off("receive_question");
@@ -93,12 +93,10 @@ const urlRoom = params.get("room")?.toUpperCase();
     setAudienceQ("");
   };
 
-  // प्रतिशत (%) निकालने का आसान गणित
   const totalVotes = votes.A + votes.B;
   const percentA = totalVotes === 0 ? 0 : Math.round((votes.A / totalVotes) * 100);
   const percentB = totalVotes === 0 ? 0 : Math.round((votes.B / totalVotes) * 100);
 
-  // ================= 1. HOME SCREEN =================
   if (role === "home") {
     return (
       <div className="container">
@@ -126,21 +124,28 @@ const urlRoom = params.get("room")?.toUpperCase();
       </div>
     );
   }
-
-  // ================= 2. HOST SCREEN =================
   if (role === "host") {
     return (
       <div className="container">
         <div className="card">
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                        <div>
-              <button onClick={() => setRole("home")} className="btn" style={{ backgroundColor: "#e2e8f0", color: "#1e293b", padding: "6px 12px", fontSize: "13px", marginBottom: "10px" }}>← Back to Home</button>
+            <div>
+              <button
+                onClick={() => setRole("home")}
+                className="btn"
+                style={{ backgroundColor: "#e2e8f0", color: "#1e293b", padding: "6px 12px", fontSize: "13px", marginBottom: "10px" }}
+              >
+                ← Back to Home
+              </button>
               <h2 style={{ margin: 0 }}>Host Dashboard</h2>
               <p style={{ color: "#64748b", margin: "5px 0" }}>Room Code: <b>{roomCode}</b></p>
             </div>
 
             <div className="qr-box">
-<QRCodeCanvas value={window.location.origin + "/?room=" + roomCode} size={100} />          </div>
+              <QRCodeCanvas value={window.location.origin + "/?room=" + roomCode} size={100} />
+              <div style={{ fontSize: "11px", marginTop: "4px", color: "#475569" }}>Scan to Join</div>
+            </div>
+          </div>
         </div>
 
         <div className="card">
@@ -183,7 +188,6 @@ const urlRoom = params.get("room")?.toUpperCase();
             <div>
               <p style={{ fontSize: "18px", marginBottom: "20px" }}><b>{activePoll.question}</b></p>
 
-              {/* Option A Progress Bar */}
               <div className="poll-result-box">
                 <div className="poll-label">
                   <span>{activePoll.optA}</span>
@@ -194,7 +198,6 @@ const urlRoom = params.get("room")?.toUpperCase();
                 </div>
               </div>
 
-              {/* Option B Progress Bar */}
               <div className="poll-result-box">
                 <div className="poll-label">
                   <span>{activePoll.optB}</span>
@@ -223,15 +226,19 @@ const urlRoom = params.get("room")?.toUpperCase();
     );
   }
 
-  // ================= 3. AUDIENCE SCREEN =================
   return (
-        <div className="container">
+    <div className="container">
       <div className="card">
-        <button onClick={() => setRole("home")} className="btn" style={{ backgroundColor: "#e2e8f0", color: "#1e293b", padding: "6px 12px", fontSize: "13px", marginBottom: "10px" }}>← Back to Home</button>
+        <button
+          onClick={() => setRole("home")}
+          className="btn"
+          style={{ backgroundColor: "#e2e8f0", color: "#1e293b", padding: "6px 12px", fontSize: "13px", marginBottom: "10px" }}
+        >
+          ← Back to Home
+        </button>
         <h2 style={{ margin: 0 }}>Audience View</h2>
         <p style={{ color: "#64748b", margin: "5px 0 0 0" }}>Connected to Room: <b>{roomCode}</b></p>
       </div>
-
 
       <div className="card">
         <h3 style={{ marginTop: 0 }}>Live Poll</h3>
