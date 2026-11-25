@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { io } from "socket.io-client";
 import { QRCodeCanvas } from "qrcode.react";
 
-const socket = io("http://" + "192.168.1.4" + ":" + "5000");
+const socket = io("https://onrender.com");
 
 function App() {
   const [role, setRole] = useState("home");
@@ -140,8 +140,7 @@ const urlRoom = params.get("room")?.toUpperCase();
             </div>
 
             <div className="qr-box">
-<QRCodeCanvas value={"http://" + "192.168.1.4" + ":" + "5173/?room=" + roomCode} size={100} />            </div>
-          </div>
+<QRCodeCanvas value={window.location.origin + "/?room=" + roomCode} size={100} />          </div>
         </div>
 
         <div className="card">
